@@ -1,5 +1,3 @@
-
-
 function doPost(e) {
   var update = JSON.parse(e.postData.contents);
   if (update.message) {
@@ -105,7 +103,7 @@ function forwardMediaToAdmin(message, content) {
 
 // Fungsi untuk meneruskan balasan admin ke user
 // Fungsi untuk meneruskan balasan admin ke user
-function forwardAdminReply(targetChatId, message) {
+function forwardAdminReplyTES(targetChatId, message) {
   var url;
   var payload;
   var options = {
@@ -172,6 +170,84 @@ function forwardAdminReply(targetChatId, message) {
 
   options.payload = JSON.stringify(payload);
   UrlFetchApp.fetch(url, options);
+}
+
+function forwardAdminReply(targetChatId, message) {
+  try {
+    var url;
+    var payload;
+    var options = {
+      method: "post",
+      contentType: "application/json"
+    };
+
+    var adminMessage = `<b>Pesan dari admin:</b>\n`;
+
+    if (message.text) {
+      // Kirim teks
+      url = `https://api.telegram.org/bot${TOKEN}/sendMessage`;
+      payload = {
+        chat_id: targetChatId,
+        text: adminMessage + `<code>${message.text}</code>`,
+        parse_mode: "HTML"
+      };
+    } else if (message.photo) {
+      // Kirim foto
+      url = `https://api.telegram.org/bot${TOKEN}/sendPhoto`;
+      payload = {
+        chat_id: targetChatId,
+        photo: message.photo.pop().file_id, // Menggunakan foto terakhir
+        caption: adminMessage + (message.caption || ""),
+        parse_mode: "HTML"
+      };
+    } else if (message.document) {
+      // Kirim dokumen
+      url = `https://api.telegram.org/bot${TOKEN}/sendDocument`;
+      payload = {
+        chat_id: targetChatId,
+        document: message.document.file_id,
+        caption: adminMessage + (message.caption || ""),
+        parse_mode: "HTML"
+      };
+    } else if (message.video) {
+      // Kirim video
+      url = `https://api.telegram.org/bot${TOKEN}/sendVideo`;
+      payload = {
+        chat_id: targetChatId,
+        video: message.video.file_id,
+        caption: adminMessage + (message.caption || ""),
+        parse_mode: "HTML"
+      };
+    } else if (message.audio) {
+      // Kirim audio
+      url = `https://api.telegram.org/bot${TOKEN}/sendAudio`;
+      payload = {
+        chat_id: targetChatId,
+        audio: message.audio.file_id,
+        caption: adminMessage + (message.caption || ""),
+        parse_mode: "HTML"
+      };
+    } else if (message.voice) {
+      // Kirim pesan suara
+      url = `https://api.telegram.org/bot${TOKEN}/sendVoice`;
+      payload = {
+        chat_id: targetChatId,
+        voice: message.voice.file_id,
+        caption: adminMessage + (message.caption || ""),
+        parse_mode: "HTML"
+      };
+    } else {
+      // Jika tipe tidak dikenali
+      throw new Error("Tipe pesan tidak didukung");
+    }
+
+    // Kirim permintaan ke API Telegram
+    options.payload = JSON.stringify(payload);
+    var response = UrlFetchApp.fetch(url, options);
+    Logger.log("Response: " + response.getContentText());
+  } catch (e) {
+    Logger.log("Error: " + e.message);
+  }
 }
 
 
